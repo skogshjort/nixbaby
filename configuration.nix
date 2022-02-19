@@ -18,6 +18,9 @@
   networking.hostName = "nixos"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
+  # Set your time zone.
+  time.timeZone = "Europe/Stockholm";
+
   # The global useDHCP flag is deprecated, therefore explicitly set to false here.
   # Per-interface useDHCP will be mandatory in the future, so this generated config
   # replicates the default behaviour.
@@ -38,8 +41,56 @@
     keyMap = "sv-latin1";
   };
 
-  # Set your time zone.
-  time.timeZone = "Europe/Stockholm";
+  # Enable CUPS to print documents.
+  # services.printing.enable = true;
+
+  # Enable sound.
+  sound.enable = true;
+  hardware.pulseaudio.enable = true;
+
+  # Enable 32 bit stuff for steam
+  hardware.opengl.driSupport32Bit = true;
+  hardware.opengl.extraPackages32 = with pkgs.pkgsi686Linux; [ libva ];
+  hardware.pulseaudio.support32Bit = true;
+
+  # Make slock able to disable out-of-memory killing
+  security.wrappers.slock.source = "${pkgs.slock.out}/bin/slock";
+  security.wrappers.udevil.source = "${pkgs.udevil.out}/bin/udevil";
+
+  services.xserver = {
+    # Enable the X11 windowing system.
+    enable = true;
+    layout = "se";
+    xkbOptions = "eurosign:e";
+
+    # Enable touchpad support.
+    libinput.enable = true;
+
+    windowManager.dwm.enable = true;
+
+    displayManager = {
+      defaultSession = "none+dwm";
+      sessionCommands = ''
+        setxkbmap -option caps:escape
+        feh --bg-scale ~/wallpaper.jpeg
+        slock
+      '';
+      # sddm = {
+      #   enable = true;
+      # };
+      autoLogin = {
+        enable = true;
+        user = "humla";
+      };
+    };
+  };
+
+  # Define a user account. Don't forget to set a password with ‘passwd’.
+  users.users.humla = {
+    isNormalUser = true;
+    extraGroups = [ "audio" "wheel" "networkmanager" ]; # Enable ‘sudo’ for the user.
+  };
+
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
@@ -118,25 +169,6 @@
 
 
 
-  environment.etc."vis/visrc.lua".text = ''
-	-- load standard vis module, providing parts of the Lua API
-	require('vis')
-
-	vis.events.subscribe(vis.events.INIT, function()
-		-- Your global configuration options
-		vis:command('set theme dark-16')
-	end)
-
-	vis.events.subscribe(vis.events.WIN_OPEN, function(win)
-		-- Your per window configuration options e.g.
-		vis:command('set relativenumber')
-		vis:command('set tabwidth 2')
-		vis:command('set expandtab')
-		vis:command('set autoindent')
-		vis:command_register('gU', function() vis:feedkeys('gU') end)
-		vis:command_register('gu', function() vis:feedkeys('gu') end)
-	end)
-  '';
 
 
   nixpkgs.config.allowUnfree = true;
@@ -147,7 +179,6 @@
   # programs.gnupg.agent = {
   #   enable = true;
   #   enableSSHSupport = true;
-  #   pinentryFlazvor = "gnome3";
   # };
 
   # List services that you want to enable:
@@ -160,56 +191,6 @@
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   networking.firewall.enable = false;
-
-  # Enable CUPS to print documents.
-  # services.printing.enable = true;
-
-  # Enable sound.
-  sound.enable = true;
-  hardware.pulseaudio.enable = true;
-
-  # Enable 32 bit stuff for steam
-  hardware.opengl.driSupport32Bit = true;
-  hardware.opengl.extraPackages32 = with pkgs.pkgsi686Linux; [ libva ];
-  hardware.pulseaudio.support32Bit = true;
-
-  # Make slock able to disable out-of-memory killing
-  security.wrappers.slock.source = "${pkgs.slock.out}/bin/slock";
-  security.wrappers.udevil.source = "${pkgs.udevil.out}/bin/udevil";
-
-  services.xserver = {
-    # Enable the X11 windowing system.
-    enable = true;
-    layout = "se";
-    xkbOptions = "eurosign:e";
-
-    # Enable touchpad support.
-    libinput.enable = true;
-
-    windowManager.dwm.enable = true;
-
-    displayManager = {
-      defaultSession = "none+dwm";
-      sessionCommands = ''
-        setxkbmap -option caps:escape
-        feh --bg-scale ~/wallpaper.jpeg
-        slock
-      '';
-      # sddm = {
-      #   enable = true;
-      # };
-      autoLogin = {
-        enable = true;
-        user = "humla";
-      };
-    };
-  };
-
-  # Define a user account. Don't forget to set a password with ‘passwd’.
-  users.users.humla = {
-    isNormalUser = true;
-    extraGroups = [ "audio" "wheel" "networkmanager" ]; # Enable ‘sudo’ for the user.
-  };
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
